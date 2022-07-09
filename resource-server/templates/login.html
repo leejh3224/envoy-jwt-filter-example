@@ -1,0 +1,57 @@
+<script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+<link href="//netdna.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+
+<script>
+    $(document).ready(() => {
+        $("form").submit((e) => {
+            e.preventDefault()
+
+            const username = $("[name='username']").val()
+            const password = $("[name='password']").val()
+
+            $.ajax({
+                url: "http://127.0.0.1:8081/token",
+                type: "POST",
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify({
+                    username,
+                    password
+                }),
+                success: (res) => {
+                    document.cookie = `token=${res.token}`
+                    window.location.href = "http://127.0.0.1:10000/private"
+                },
+                error: (xhr) => {
+                    alert(xhr.responseJSON.error)
+                }
+            })
+        })
+    })
+</script>
+<!------ Include the above in your HEAD tag ---------->
+
+<div class="container" style="margin-top:30px">
+    <div class="col-md-4">
+        <div class="login-panel panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Sign In</h3>
+            </div>
+            <div class="panel-body">
+                <form method="post" action="">
+                    <fieldset>
+                        <div class="form-group">
+                            <input class="form-control" placeholder="Username" name="username" type="text" required>
+                        </div>
+                        <div class="form-group">
+                            <input class="form-control" placeholder="Password" name="password" type="password" required>
+                        </div>
+                        <!-- Change this to a button or input when using this as a form -->
+                        <button class="btn btn-sm btn-success">Login</button>
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

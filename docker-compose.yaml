@@ -1,0 +1,17 @@
+version: '3.4'
+
+services:
+  resource-server:
+    image: resource-server
+    ports:
+      - "8080:8080"
+  auth-proxy:
+    image: auth-proxy
+    platform: linux/amd64
+    ports:
+      - "9901:9901"
+      - "10000:10000"
+  auth-server:
+    image: auth-server
+    ports:
+      - "8081:8081"
