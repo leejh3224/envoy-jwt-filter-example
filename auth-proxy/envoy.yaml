@@ -30,6 +30,7 @@ static_resources:
                   providers:
                     auth-server:
                       issuer: "auth-server"
+                      payload_in_metadata: "jwt_payload" # this part is important! rbac filter will look up for jwt_authn filter object and its payload
                       remote_jwks:
                         http_uri:
                           uri: auth-server/.well-known/jwks.json
@@ -46,6 +47,45 @@ static_resources:
                         prefix: /private
                       requires:
                         provider_name: "auth-server"
+              - name: envoy.filters.http.rbac
+                typed_config:
+                  "@type": type.googleapis.com/envoy.extensions.filters.http.rbac.v3.RBAC
+                  rules:
+                    action: ALLOW
+                    policies:
+                      "public":
+                        permissions:
+                          - and_rules:
+                              rules:
+                                - header:
+                                    name: ":method"
+                                    string_match:
+                                      exact: "GET"
+                                - url_path:
+                                    path:
+                                      exact: "/login"
+                        principals:
+                          - any: true # login page is public
+                      "admin-only":
+                        permissions:
+                          - and_rules:
+                              rules:
+                                - header:
+                                    name: ":method"
+                                    string_match:
+                                      exact: "GET"
+                                - url_path:
+                                    path:
+                                      exact: "/private"
+                        principals:
+                          metadata:
+                            filter: envoy.filters.http.jwt_authn
+                            path:
+                              - key: jwt_payload # jwt_authn has jwt_payload object if `payload_in_metadata` is set and its value is jwt_payload
+                              - key: sub
+                            value:
+                              string_match:
+                                exact: "admin"
               - name: envoy.filters.http.router
                 typed_config:
                   "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router

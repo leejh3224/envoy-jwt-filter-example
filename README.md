@@ -31,3 +31,13 @@ Resource-server provides resources for end users or other services.
 Below is a diagram explaining each user scenarios.
 
 ![Diagram](./images/envoy-jwt-filter-example.png)
+
+## RBAC
+
+There are two kind of roles in this example, admin and user.
+
+If you log in using an admin account (username = admin, password = 1234), you'll be successfully redirected to private page.
+
+However, if you use a user account (username = user-1234, password = 1234), you'll be redirected to "RBAC: access denied" page.
+
+This can be accomplished using Envoy's [rbac filter](https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_filters/rbac_filter).

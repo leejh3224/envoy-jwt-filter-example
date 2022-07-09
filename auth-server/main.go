@@ -18,6 +18,12 @@ type getTokenRequest struct {
 	Password string `json:"password" binding:"required"`
 }
 
+type user struct {
+	Username string
+	Password string
+	Role     string
+}
+
 func main() {
 	r := gin.Default()
 	r.Use(cors.Default())
@@ -28,7 +34,20 @@ func main() {
 		var body getTokenRequest
 		_ = c.BindJSON(&body)
 
-		if body.Username != "admin" || body.Password != "1234" {
+		users := []user{
+			{Username: "admin", Password: "1234", Role: "admin"},
+			{Username: "user-1234", Password: "1234", Role: "user"},
+		}
+
+		var userFound *user
+		for _, user := range users {
+			if body.Username == user.Username && body.Password == user.Password {
+				userFound = &user
+				break
+			}
+		}
+
+		if userFound == nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid username or password"})
 			return
 		}
@@ -47,6 +66,8 @@ func main() {
 		unsigned, err := jwt.NewBuilder().
 			Issuer("auth-server").
 			IssuedAt(time.Now()).
+			Subject(userFound.Role).
+			Expiration(time.Now().AddDate(0, 0, 7)).
 			Build()
 		if err != nil {
 			panic(err)
